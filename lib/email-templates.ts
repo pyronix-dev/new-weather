@@ -455,3 +455,47 @@ export function getVigilanceAlertEmailHtml(colorName: string): string {
 </html>
     `
 }
+
+export function getContactMessageEmailHtml(name: string, email: string, subject: string, message: string): string {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: #333333; }
+    .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .header { background-color: #ffffff; padding: 30px 40px; text-align: center; border-bottom: 1px solid #f0f0f0; }
+    .logo { height: 60px; width: auto; }
+    .content { padding: 40px; line-height: 1.6; }
+    .h1 { color: #1a202c; font-size: 24px; font-weight: 700; margin-bottom: 20px; text-align: center; }
+    .message-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 30px 0; white-space: pre-wrap; }
+    .footer { background-color: #f8fafc; padding: 20px 40px; text-align: center; font-size: 12px; color: #94a3b8; }
+    .meta { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${LOGO_TEXT_URL}" alt="Météo Martinique" class="logo">
+        </div>
+        <div class="content">
+            <h1 class="h1">Nouveau message de contact</h1>
+            
+            <div class="meta">
+                <p><strong>De:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
+                <p><strong>Sujet:</strong> ${subject}</p>
+            </div>
+            
+            <div class="message-box">${message}</div>
+            
+            <p>Ce message a été envoyé depuis le formulaire de contact.</p>
+        </div>
+        <div class="footer">
+            <img src="${LOGO_ICON_URL}" alt="Icon" width="40" height="30" style="margin-bottom: 10px; opacity: 0.8;">
+            <p>&copy; ${new Date().getFullYear()} Météo Martinique. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+}

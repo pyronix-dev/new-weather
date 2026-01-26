@@ -1,6 +1,6 @@
 // Developed by Omar Rafik (OMX) - omx001@proton.me
 
-import { getPaymentConfirmationEmailHtml, getCancellationEmailHtml, getPlanChangeEmailHtml } from '@/lib/email-templates'
+import { getPaymentConfirmationEmailHtml, getCancellationEmailHtml, getPlanChangeEmailHtml, getContactMessageEmailHtml } from '@/lib/email-templates'
 
 
 
@@ -272,4 +272,17 @@ export async function sendInvoiceEmail(
   `
 
   return sendEmail(email, subject, htmlContent)
+}
+
+export async function sendContactMessageEmail(
+  adminEmail: string,
+  contactName: string,
+  contactEmail: string,
+  subject: string,
+  message: string
+): Promise<SendEmailResult> {
+  const emailSubject = `[Contact] ${subject}`
+  const htmlContent = getContactMessageEmailHtml(contactName, contactEmail, subject, message)
+
+  return sendEmail(adminEmail, emailSubject, htmlContent)
 }

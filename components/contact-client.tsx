@@ -8,12 +8,38 @@ import { Footer } from "@/components/footer"
 export default function ContactPage({ initialUser }: { initialUser: any }) {
     const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setStatus('sending')
-        
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        setStatus('success')
+
+        const formData = new FormData(e.currentTarget)
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            subject: formData.get('subject') || 'Question générale',
+            message: formData.get('message')
+        }
+
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+
+            const result = await res.json()
+
+            if (res.ok) {
+                setStatus('success')
+            } else {
+                alert(result.error || "Une erreur est survenue")
+                setStatus('error')
+            }
+        } catch (error) {
+            console.error(error)
+            alert("Erreur de connexion")
+            setStatus('error')
+        }
     }
 
     return (
@@ -52,6 +78,7 @@ export default function ContactPage({ initialUser }: { initialUser: any }) {
                                     <input
                                         required
                                         type="text"
+                                        name="name"
                                         placeholder="Votre nom"
                                         defaultValue={initialUser?.name || ''}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all font-medium text-slate-800"
@@ -62,6 +89,7 @@ export default function ContactPage({ initialUser }: { initialUser: any }) {
                                     <input
                                         required
                                         type="email"
+                                        name="email"
                                         placeholder="votre@email.com"
                                         defaultValue={initialUser?.email || ''}
                                         readOnly={!!initialUser?.email}
@@ -84,7 +112,7 @@ export default function ContactPage({ initialUser }: { initialUser: any }) {
 
                             <div className="space-y-2">
                                 <label className="block text-sm font-bold text-slate-700 uppercase tracking-wide">Sujet</label>
-                                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all font-medium text-slate-800">
+                                <select name="subject" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300 transition-all font-medium text-slate-800">
                                     <option>Question générale</option>
                                     <option>Problème technique</option>
                                     <option>Suggestion</option>
@@ -96,6 +124,7 @@ export default function ContactPage({ initialUser }: { initialUser: any }) {
                             <div className="space-y-2">
                                 <label className="block text-sm font-bold text-slate-700 uppercase tracking-wide">Message</label>
                                 <textarea
+                                    name="message"
                                     required
                                     rows={5}
                                     placeholder="Comment pouvons-nous vous aider ?"
