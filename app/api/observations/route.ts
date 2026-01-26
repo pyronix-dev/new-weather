@@ -1,6 +1,7 @@
 // Developed by Omar Rafik (OMX) - omx001@proton.me
 import { NextResponse } from 'next/server'
 import { createSupabaseAdmin } from '@/lib/supabase'
+import { getUserSession } from '@/lib/auth-server'
 
 export const dynamic = 'force-dynamic'
 

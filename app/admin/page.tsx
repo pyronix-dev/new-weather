@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function AdminPage() {
     const user = await getUserFromSession()
 
-    
+
     if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
         redirect('/')
     }

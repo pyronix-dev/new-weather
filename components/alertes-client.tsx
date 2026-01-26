@@ -3,6 +3,7 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { isValidPhoneNumber } from "react-phone-number-input"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { UserPhoneInput } from "./ui/phone-input"
@@ -497,9 +498,7 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                     <EmailIcon />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-800">Alertes Email</h2>
-                  <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
-                    0.01€/an
-                  </span>
+                  4.99€/an
                 </div>
                 <p className="text-slate-500 font-medium mb-8 ml-14">
                   Couverture{" "}
@@ -542,7 +541,9 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                           <p className="font-bold text-emerald-800 text-sm">Connecté</p>
                           <p className="text-xs text-emerald-600">{user.email}</p>
                         </div>
-                        <span className="bg-emerald-200 text-emerald-800 text-xs font-bold px-2 py-1 rounded">Vérifié</span>
+                        <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
+                          10€/an
+                        </span>
                       </div>
                     ) : (
                       <div className="relative">
@@ -683,7 +684,7 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                   onClick={() => handleCheckout('email-annual')}
                   className="w-full py-5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed text-white font-black text-lg rounded-xl transition-all duration-300 hover:shadow-xl active:scale-[0.98]"
                 >
-                  {isLoading ? 'Chargement...' : "Payer 0.01€ et s'abonner pour 1 an"}
+                  {isLoading ? 'Chargement...' : "Payer 10€ et s'abonner pour 1 an"}
                 </button>
               </div>
             </div>
@@ -797,6 +798,7 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                             value={phone}
                             onChange={(val) => setPhone(val)}
                             disabled={phoneVerified || codeSent}
+                            className={!phone || isValidPhoneNumber(phone) ? "" : "border-red-500 focus:border-red-500 focus:ring-red-200"}
                           />
                         )}
                       </div>
@@ -823,7 +825,7 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                     </div>
                   </div>
 
-                  {/* SMS Verification - COMMENTED OUT: No pre-verification needed, SMS sent on purchase success
+                  {/* SMS Verification - COMMENTED OUT: No pre-verification needed, SMS sent on purchase success */}
                   {!phoneVerified && !user?.phone && (
                     <div className="bg-slate-50 rounded-xl p-6 mb-8 border border-slate-200">
                       <h3 className="text-sm font-black text-slate-700 mb-4 uppercase tracking-wide">
@@ -843,10 +845,10 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                           {!codeSent ? (
                             <button
                               onClick={handleSendCode}
-                              disabled={!phone || !selectedProfile || isSendingCode}
-                              className="px-8 py-4 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-300 text-white font-black rounded-xl transition-all hover:shadow-lg active:scale-95"
+                              disabled={!phone || !selectedProfile || isSendingCode || !isValidPhoneNumber(phone)}
+                              className="w-full py-4 bg-slate-800 hover:bg-slate-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-black rounded-xl transition-all hover:shadow-lg disabled:cursor-not-allowed"
                             >
-                              {isSendingCode ? 'Envoi...' : 'Envoyer le code'}
+                              {isSendingCode ? 'Envoi...' : 'Recevoir mon code par SMS'}
                             </button>
                           ) : (
                             <button
@@ -891,7 +893,7 @@ export function AlertesClient({ initialUser }: { initialUser: any }) {
                       </div>
                     </div>
                   )}
-                  END SMS Verification */}
+
 
                   {/* Billing Cycle Selection */}
                   <div className="mb-8">

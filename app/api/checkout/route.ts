@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-04-30.basil',
+    apiVersion: '2025-12-15.clover',
 })
 
 
@@ -23,7 +23,7 @@ const PRICES = {
         interval: 'year' as const,
     },
     'email-annual': {
-        amount: 1, // 0.01€ for testing (was 1000)
+        amount: 1000, // 10.00€
         name: 'Alertes Email - Annuel',
         description: 'Alertes météo Email - Abonnement annuel',
         mode: 'subscription' as const,
