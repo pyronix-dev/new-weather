@@ -56,9 +56,7 @@ async function getOAuthToken(): Promise<string | null> {
     cachedToken = data.access_token
     tokenExpiration = Date.now() + (data.expires_in * 1000)
     return cachedToken
-  } catch (error) {
-    return null
-  }
+  } catch (error) { return null }
 }
 
 async function tryFetchWithToken(endpoint: string, token: string): Promise<Response | null> {
@@ -68,54 +66,71 @@ async function tryFetchWithToken(endpoint: string, token: string): Promise<Respo
       cache: "no-store",
     })
     return response.ok ? response : null
-  } catch {
-    return null
-  }
+  } catch { return null }
 }
 
 async function processResponse(response: Response) {
   const arrayBuffer = await response.arrayBuffer()
   const zip = new JSZip()
   const zipContents = await zip.loadAsync(arrayBuffer)
-  const jsonFileName = Object.keys(zipContents.files).find(f => f.endsWith(".json"))
 
-  if (jsonFileName) {
-    const content = await zipContents.files[jsonFileName].async("string")
-    const data = JSON.parse(content)
-    const domain = data.timelaps.domain_ids.find((d: any) => d.domain_id === "VIGI972")
-    
-    if (domain) {
-      const phenomena = domain.phenomenon_items
-        .filter((p: any) => p.phenomenon_max_color_id > 1)
-        .map((p: any) => PHENOMENON_MAP[p.phenomenon_id] || "alerte")
-      const colorName = COLOR_ID_MAP[domain.max_color_id] || "vert"
-      return {
-        colorId: domain.max_color_id,
-        colorName,
-        mapUrl: MAP_URLS[colorName],
-        lastUpdate: new Date().toISOString(),
-        phenomena,
-        source: "JSON_GLOBAL"
+  // Find the TFFF file (The provider uses .txt extension even though content is JSON)
+  const dataFile = Object.keys(zipContents.files).find(f => f.includes("TFFF") || f.endsWith(".txt"))
+
+  if (dataFile) {
+    const content = await zipContents.files[dataFile].async("string")
+    try {
+      // Parse the JSON data found inside the text file
+      const data = JSON.parse(content)
+
+      // Target the Global Domain for Martinique
+      const domain = data.timelaps.domain_ids.find((d: any) => d.domain_id === "VIGI972")
+
+      if (domain) {
+        const phenomena = domain.phenomenon_items
+          .filter((p: any) => p.phenomenon_max_color_id > 1)
+          .map((p: any) => PHENOMENON_MAP[p.phenomenon_id] || "alerte")
+
+        const colorName = COLOR_ID_MAP[domain.max_color_id] || "vert"
+
+        return {
+          colorId: domain.max_color_id,
+          colorName,
+          mapUrl: MAP_URLS[colorName],
+          lastUpdate: new Date().toISOString(),
+          phenomena,
+          source: "JSON_PARSED_FROM_TXT"
+        }
       }
+    } catch (e) {
+      console.error("[MQ] Parsing error:", e)
+      throw new Error("Invalid data format from provider")
     }
   }
-  throw new Error("Could not parse data from provider")
+  throw new Error("No valid data file found in ZIP")
 }
 
 export async function GET() {
   try {
     let response: Response | null = null
     const endpoint = "https://public-api.meteofrance.fr/public/DPVigilance/v1/vigilanceom/flux/dernier"
-    if (METEO_FRANCE_API_KEY) response = await tryFetchWithToken(endpoint, METEO_FRANCE_API_KEY)
+
+    if (METEO_FRANCE_API_KEY) {
+      response = await tryFetchWithToken(endpoint, METEO_FRANCE_API_KEY)
+    }
+
     if (!response) {
       const token = await getOAuthToken()
       if (token) response = await tryFetchWithToken(endpoint, token)
     }
+
     if (response) {
       const data = await processResponse(response)
-      return NextResponse.json(data, { headers: { "Cache-Control": "public, s-maxage=300" } })
+      return NextResponse.json(data, {
+        headers: { "Cache-Control": "public, s-maxage=300" }
+      })
     }
-    throw new Error("No response from Météo France")
+    throw new Error("API Failure")
   } catch (error) {
     return NextResponse.json({
       colorId: -1,
